@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
+import main.Movement.Direction;
 import main.ParticleAbstract.Element;
 
 public class Grid {
@@ -19,7 +20,7 @@ public class Grid {
 				//
 				ParticleAbstract a = new ParticleSpace();
 				particles.get(c).add(r, a);
-				if(r > 1 && c > 100){
+				if(c > 100){
 					if(rand.nextDouble() < 0.2){
 						a = new ParticleWater();
 						addParticle(c, r, a);
@@ -48,31 +49,45 @@ public class Grid {
 		}
 	}
 	public void update(){
-		for(int i = 0; i < liquids.size();i++){
-			ParticleAbstract p1 = liquids.get(i);
-			Point p = getLocation(p1);
-			if(canMove(p.x, p.y, Direction.down)){
-				move(p.x,p.y,Direction.down);
-			}
-			else{
-				if(rand.nextDouble() < 1){
-					Direction d = Direction.left;
-					if(rand.nextBoolean()){
-						d = Direction.right;
+		firstloop:
+			for(int i = 0; i < liquids.size();i++){
+				ParticleAbstract p1 = liquids.get(i);
+				Point p = getLocation(p1);
+				Movement down = new Movement(Direction.down,1);
+				if(canMove(p.x, p.y,down)){
+					move(p.x,p.y,down);
+				}
+				Movement left1 = new Movement(Direction.left,1);
+				Movement left2 = new Movement(Direction.left,2);
+				Movement right1 = new Movement(Direction.right,1);
+				Movement right2 = new Movement(Direction.right,2);
+				Movement[][] moves = {{left1,left2},{right1,right2}};
+				//1 is left 2 is right
+				int m = rand.nextInt(2);
+				for(int j = 0;j < 2;j++){
+					if(canMove(p.x,p.y,moves[m][j])){
+						move(p.x,p.y,moves[m][j]);
+						continue firstloop;
+
 					}
-					if(canMove(p.x,p.y,d)){
-						move(p.x,p.y,d);
+				}
+				for(int j = 0;j < 2;j++){
+					if(canMove(p.x,p.y,moves[1 - m][j])){
+						move(p.x,p.y,moves[1 - m][j]);
+						continue firstloop;
 					}
 				}
 			}
 
-		}
 	}
-	public boolean canMove(int col, int row, Direction d){
+	public boolean canMove(int col, int row, Movement m){
 		//		ParticleAbstract moving = getParticle(col,row);
-		int targetCol = col + d.x;
-		int targetRow = row - d.y;
+		int targetCol = col + m.getX();
+		int targetRow = row - m.getY();
 		ParticleAbstract target = getParticle(targetCol,targetRow);
+		if(target == null){
+			return false;
+		}
 		if(target instanceof ParticleSpace){
 			return true;
 		}
@@ -81,10 +96,10 @@ public class Grid {
 		}
 
 	}
-	public void move(int col,int row,Direction d){
+	public void move(int col,int row,Movement m){
 		ParticleAbstract moving = getParticle(col,row);
-		int targetCol = col + d.x;
-		int targetRow = row - d.y;
+		int targetCol = col +  m.getX();
+		int targetRow = row - m.getY();
 		//		ParticleAbstract target = getParticle(targetCol,targetRow);
 		setParticle(targetCol,targetRow,moving);
 		setParticle(col,row,new ParticleSpace());
@@ -94,20 +109,11 @@ public class Grid {
 	}
 	public ParticleAbstract getParticle(int x, int y){
 		if(x < 0 || x >= width || y < 0 || y >= height){
-			//		System.err.println("THAT PARTICLE DONT EXIST! X, Y :"+x+ " " +y );
 			return null;
 		}
 		else{
 			return particles.get(x).get(y);
 		}
 	}
-	enum Direction{
-		up(0,1),down(0,-1),left(-1,0),right(1,0);
-		Direction(int x, int y){
-			this.x = x;
-			this.y = y;
-		}
-		int x;
-		int y;
-	}
+
 }

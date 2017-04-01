@@ -43,6 +43,8 @@ public class Grid {
 		return null;
 	}
 	public void addParticle(int x, int y, ParticleAbstract p){
+		p.x = x;
+		p.y = y;
 		particles.get(x).set(y, p);
 		if(p.element == Element.LIQUID){
 			liquids.add(p);
@@ -51,8 +53,7 @@ public class Grid {
 	public void update(){
 		firstloop:
 			for(int i = 0; i < liquids.size();i++){
-				ParticleAbstract p1 = liquids.get(i);
-				Point p = getLocation(p1);
+				ParticleAbstract p = liquids.get(i);
 				Movement down = new Movement(Direction.down,1);
 				if(canMove(p.x, p.y,down)){
 					move(p.x,p.y,down);
@@ -102,6 +103,8 @@ public class Grid {
 		int targetRow = row - m.getY();
 		//		ParticleAbstract target = getParticle(targetCol,targetRow);
 		setParticle(targetCol,targetRow,moving);
+		moving.x = targetCol;
+		moving.y = targetRow;
 		setParticle(col,row,new ParticleSpace());
 	}
 	public void setParticle(int x, int y, ParticleAbstract p){

@@ -10,7 +10,7 @@ public abstract class ParticleAbstract implements Cloneable{
 	public int x = 0;
 	public int y = 0;
 	public enum Element{
-		SOLID, GAS, LIQUID, SPACE
+		SOLID, GAS, LIQUID, SPACE, POWDER
 	}
 	public Object clone() {
 		Object clone = null;

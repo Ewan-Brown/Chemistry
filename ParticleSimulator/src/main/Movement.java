@@ -10,7 +10,9 @@ public class Movement {
 	}
 	
 	enum Direction{
-		up(0,1),down(0,-1),left(-1,0),right(1,0);
+		up(0,1),down(0,-1),left(-1,0),right(1,0),
+		downLeft(-1,-1),downRight(1,-1),
+		powderLeft(-1,-2),powderRight(1,-2);
 		Direction(int x, int y){
 			this.x = x;
 			this.y = y;

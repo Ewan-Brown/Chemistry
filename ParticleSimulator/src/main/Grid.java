@@ -9,7 +9,7 @@ import main.Movement.Direction;
 import main.ParticleAbstract.Element;
 
 public class Grid implements Runnable{
-	int width = 400;
+	int width = 300;
 	int height = 400;
 	Color[][] colors = new Color[width][height];
 	ArrayList<ArrayList<ParticleAbstract>> particles = new ArrayList<ArrayList<ParticleAbstract>>();
@@ -23,17 +23,17 @@ public class Grid implements Runnable{
 				//
 				ParticleAbstract a = new ParticleSpace();
 				particles.get(c).add(r, a);
-				if(c > 100 && c < 150){
-					if(rand.nextDouble() < 0.9){
-						if( r > 200){
-							a = new ParticleWater();
-						}
-						if (r < 100){
-							a = new ParticlePowder();
-						}
-						addParticle(c, r, a);
+				//				if(c > 100 && c < 150){
+				if(rand.nextDouble() < 0.6){
+					if( r > 350){
+						a = new ParticleWater();
 					}
+					if (r < 100 && c > 200){
+						a = new ParticlePowder();
+					}
+					addParticle(c, r, a);
 				}
+				//				}
 
 			}
 		}
@@ -87,6 +87,15 @@ public class Grid implements Runnable{
 					move(p.x,p.y,down);
 					if(rand.nextDouble() < 0.3){
 						continue;
+					}
+					if(rand.nextDouble() < 0.2){
+						Movement m = new Movement(Direction.left,1);
+						if(rand.nextBoolean()){
+							m = new Movement(Direction.right,1);
+						}
+						if(canMove(p.x,p.y,m)){
+							move(p.x,p.y,m);
+						}
 					}
 				}
 				else{
@@ -205,7 +214,7 @@ public class Grid implements Runnable{
 		while(true){
 			update();
 			try {
-				Thread.sleep(1);
+				Thread.sleep(3);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

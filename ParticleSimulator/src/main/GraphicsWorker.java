@@ -29,8 +29,12 @@ public class GraphicsWorker implements Callable<BufferedImage>{
 		Graphics2D g = (Graphics2D)b.getGraphics();
 		for(int i = 0; i < width;i++){
 			for(int j = 0; j < height;j++){
-				g.setColor(colors[i + xOffset][j + yOffset]);
-				g.fillRect(i, j, size, size);
+				Color c = colors[i + xOffset][j + yOffset];
+				if(c == Color.BLACK){
+					continue;
+				}
+				g.setColor(c);
+				g.fillRect(i, j, 1, 1);
 			}
 		}
 		return b;

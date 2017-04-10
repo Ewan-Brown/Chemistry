@@ -5,73 +5,89 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
-import main.Movement.Direction;
-import main.ParticleAbstract.Element;
+import main.Particle.Element;
 
 public class Grid implements Runnable{
 	int width = 300;
-	int height = 400;
+	int height = 350;
 	Color[][] colors = new Color[width][height];
-	ArrayList<ArrayList<ParticleAbstract>> particles = new ArrayList<ArrayList<ParticleAbstract>>();
-	ArrayList<ParticleAbstract> liquids = new ArrayList<ParticleAbstract>();
-	ArrayList<ParticleAbstract> powders = new ArrayList<ParticleAbstract>();
+	Particle[][] particleStatic = new Particle[width][height];
+	ArrayList<Clicky> clicks = new ArrayList<Clicky>();
+	ArrayList<Particle> liquids = new ArrayList<Particle>();
+	ArrayList<Particle> powders = new ArrayList<Particle>();
 	Random rand = new Random();
 	public Grid(){
-		for(int c = 0; c < width;c++){
-			particles.add(new ArrayList<ParticleAbstract>());
-			for(int r = 0; r < height;r++){
-				//
-				ParticleAbstract a = new ParticleSpace();
-				particles.get(c).add(r, a);
-				//				if(c > 100 && c < 150){
-				if(rand.nextDouble() < 0.6){
-					if( r > 350){
-						a = new ParticleWater();
+		for(int x = 0; x < width;x++){
+			for(int y = 0; y < height;y++){
+				Particle a = new Particle(Element.SPACE);
+				if(Math.sin(x) < 0.9){
+					if( y > 300){
+						a = new Particle(Element.WATER);
 					}
-					if (r < 100 && c > 200){
-						a = new ParticlePowder();
+					if (y < 100 && x > 200){
+						a = new Particle(Element.SAND);
 					}
-					addParticle(c, r, a);
 				}
-				//				}
-
+				addParticle(x, y, a);
 			}
 		}
 	}
 
-	public Point getLocation(ParticleAbstract p1){
-		for(int c = 0; c < particles.size();c++){
-			for(int r = 0; r < particles.get(c).size();r++){
-				ParticleAbstract p2 = particles.get(c).get(r);
+	public Point getLocation(Particle p1){
+		for(int x = 0; x < width;x++){
+			for(int y = 0; y < height;y++){
+				Particle p2 = particleStatic[x][y];
 				if(p2 == p1){
-					return new Point(c,r);
+					return new Point(x,y);
 				}
 			}
 		}
 		return null;
 	}
-	public void addParticle(int x, int y, ParticleAbstract p){
+	public void addParticle(int x, int y, Particle p){
+		if(x > width - 1 || x < 0 || y > height - 1 || y < 0){
+			return;
+		}
 		p.x = x;
 		p.y = y;
-		particles.get(x).set(y, p);
-		if(p.element == Element.LIQUID){
+		particleStatic[x][y] = p;
+		if(p.element.t == Element.Type.LIQUID){
 			liquids.add(p);
 		}
-		if(p.element == Element.POWDER){
+		if(p.element.t == Element.Type.POWDER){
 			powders.add(p);
 		}
 	}
 	public void update(){
-		updateColor();
 		updateLiquid();
 		updatePowder();
+		updateClicks();
+		updateColor();
 
+	}
+	public void updateClicks(){
+		for(int i = 0; i < clicks.size();i++){
+			Clicky click = clicks.get(i);
+			Point p = click.p;
+			int x = (int)p.getX() / Panel.size;
+			int y = (int)p.getY() / Panel.size;
+			if(x > width || x < 0 || y > height || y < 0){
+				continue;
+			}
+			Element e = click.e;
+			addParticle(x, y, new Particle(e));
+			addParticle(x - 1, y, new Particle(e));
+			addParticle(x + 1, y, new Particle(e));
+			addParticle(x, y + 1, new Particle(e));
+			addParticle(x, y - 1, new Particle(e));
+			clicks.remove(i);
+		}
 	}
 	public void updateColor(){
 		Color[][] colorsTemp = new Color[width][height];
-		for(int i = 0; i < width;i++){
-			for(int j = 0; j < height;j++){
-				colorsTemp[i][j] = particles.get(i).get(j).color;
+		for(int x = 0; x < width;x++){
+			for(int y = 0; y < height;y++){
+				colorsTemp[x][y] = particleStatic[x][y].element.c;
 			}
 		}
 		colors = colorsTemp;
@@ -79,8 +95,8 @@ public class Grid implements Runnable{
 	public void updatePowder(){
 		firstLoop:
 			for(int i = 0; i < powders.size();i++){
-				ParticleAbstract p = powders.get(i);
-				Movement down = new Movement(Direction.down,1);
+				Particle p = powders.get(i);
+				Movement down = new Movement(0,-1);
 
 				boolean d = canMove(p.x, p.y,down);
 				if(d){
@@ -89,9 +105,9 @@ public class Grid implements Runnable{
 						continue;
 					}
 					if(rand.nextDouble() < 0.2){
-						Movement m = new Movement(Direction.left,1);
+						Movement m = new Movement(-1,0);
 						if(rand.nextBoolean()){
-							m = new Movement(Direction.right,1);
+							m = new Movement(1,0);
 						}
 						if(canMove(p.x,p.y,m)){
 							move(p.x,p.y,m);
@@ -99,12 +115,15 @@ public class Grid implements Runnable{
 					}
 				}
 				else{
-					Movement left1 = new Movement(Direction.left,1);
-					Movement right1 = new Movement(Direction.right,1);
-					Movement dleft1 = new Movement(Direction.downLeft,1);
-					Movement dright1 = new Movement(Direction.downRight,1);
-					Movement dleft2 = new Movement(Direction.powderLeft,1);
-					Movement dright2 = new Movement(Direction.powderRight,1);
+					if(rand.nextDouble() < 0.1){
+						continue firstLoop;
+					}
+					Movement left1 = new Movement(-1,0);
+					Movement right1 = new Movement(1,0);
+					Movement dleft1 = new Movement(-1,-1);
+					Movement dright1 = new Movement(1,-1);
+					Movement dleft2 = new Movement(-1,-2);
+					Movement dright2 = new Movement(1,-2);
 					Movement[][] moves = {{left1,dleft1,dleft2},{right1,dright1,dright2}};
 					int m = rand.nextInt(2);
 					boolean flag1 = true;
@@ -132,8 +151,8 @@ public class Grid implements Runnable{
 	public void updateLiquid(){
 		liquidLoop:
 			for(int i = 0; i < liquids.size();i++){
-				ParticleAbstract p = liquids.get(i);
-				Movement down = new Movement(Direction.down,1);
+				Particle p = liquids.get(i);
+				Movement down = new Movement(0,-1);
 				boolean d = canMove(p.x, p.y,down);
 				if(d){
 					move(p.x,p.y,down);
@@ -141,10 +160,10 @@ public class Grid implements Runnable{
 						continue;
 					}
 				}
-				Movement left1 = new Movement(Direction.left,1);
-				Movement left2 = new Movement(Direction.left,2);
-				Movement right1 = new Movement(Direction.right,1);
-				Movement right2 = new Movement(Direction.right,2);
+				Movement left1 = new Movement(-1,0);
+				Movement left2 = new Movement(-2,0);
+				Movement right1 = new Movement(1,0);
+				Movement right2 = new Movement(2,0);
 				Movement[][] moves = {{left1,left2},{right1,right2}};
 				//1 is left 2 is right
 
@@ -169,17 +188,17 @@ public class Grid implements Runnable{
 			}
 	}
 	public boolean canMove(int col, int row, Movement m){
-		ParticleAbstract moving = getParticle(col,row);
-		int targetCol = col + m.getX();
-		int targetRow = row - m.getY();
-		ParticleAbstract target = getParticle(targetCol,targetRow);
+		Particle moving = getParticle(col,row);
+		int targetCol = col + m.x;
+		int targetRow = row - m.y;
+		Particle target = getParticle(targetCol,targetRow);
 		if(target == null){
 			return false;
 		}
-		if(moving.element == Element.POWDER && target.element == Element.LIQUID){
+		if(moving.element.t == Element.Type.POWDER && target.element.t == Element.Type.LIQUID){
 			return true;
 		}
-		if(target instanceof ParticleSpace){
+		if(target.element.t == Element.Type.SPACE){
 			return true;
 		}
 		else{
@@ -188,10 +207,10 @@ public class Grid implements Runnable{
 
 	}
 	public void move(int col,int row,Movement m){
-		ParticleAbstract moving = getParticle(col,row);
-		int targetCol = col +  m.getX();
-		int targetRow = row - m.getY();
-		ParticleAbstract target = getParticle(targetCol,targetRow);
+		Particle moving = getParticle(col,row);
+		int targetCol = col + m.x;
+		int targetRow = row - m.y;
+		Particle target = getParticle(targetCol,targetRow);
 		setParticle(targetCol,targetRow,moving);
 		moving.x = targetCol;
 		moving.y = targetRow;
@@ -199,22 +218,22 @@ public class Grid implements Runnable{
 		target.y = row;
 		setParticle(col,row,target);
 	}
-	public void setParticle(int x, int y, ParticleAbstract p){
-		particles.get(x).set(y, p);
+	public void setParticle(int x, int y, Particle p){
+		particleStatic[x][y] = p;
 	}
-	public ParticleAbstract getParticle(int x, int y){
+	public Particle getParticle(int x, int y){
 		if(x < 0 || x >= width || y < 0 || y >= height){
 			return null;
 		}
 		else{
-			return particles.get(x).get(y);
+			return particleStatic[x][y];
 		}
 	}
 	public void run() {
 		while(true){
 			update();
 			try {
-				Thread.sleep(3);
+				Thread.sleep(Panel.delay);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

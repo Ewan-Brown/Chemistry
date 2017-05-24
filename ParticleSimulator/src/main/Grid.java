@@ -9,8 +9,8 @@ import main.Particle.Element;
 import main.Particle.Element.Type;
 
 public class Grid implements Runnable{
-	int width = 200;
-	int height = 200;
+	int width = 300;
+	int height = 300;
 	Color[][] colors = new Color[width][height];
 	Particle[][] particleArray = new Particle[width][height];
 	ArrayList<Clicky> clicks = new ArrayList<Clicky>();
@@ -21,14 +21,14 @@ public class Grid implements Runnable{
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
 				Particle a = new Particle(Element.SPACE);
-				//				if(Math.sin(x) < 0.9){
-				//					if( y > 300){
-				//						a = new Particle(Element.WATER);
-				//					}
-				//					if (y < 100 && x > 200){
-				//						a = new Particle(Element.SAND);
-				//					}
-				//				}
+				if(Math.random() < 0.9){
+					if( x > 150){
+						a = new Particle(Element.WATER);
+					}
+//					if (y < 100 && x > 200){
+//						a = new Particle(Element.SAND);
+//					}
+				}
 				addParticle(x, y, a);
 			}
 		}
@@ -45,7 +45,6 @@ public class Grid implements Runnable{
 		return null;
 	}
 	public void addParticle(int x, int y, Particle p){
-		System.out.println(liquids.size());
 		if(x > width - 1 || x < 0 || y > height - 1 || y < 0){
 			return;
 		}
@@ -99,12 +98,12 @@ public class Grid implements Runnable{
 						 *	   and then just cycle through ints. ( Maybe speed this up using some logic?)
 						 */
 
-						//						removeParticle(p);
-						//						removeParticle(p2);
-						//						Particle pN1 = new Particle(Element.values()[f]);
-						//						Particle pN2 = new Particle(Element.values()[f]);
-						//						addParticle(p.x, p.y, pN1);
-						//						addParticle(p.x + x, p.y + y, pN2);
+												removeParticle(p);
+												removeParticle(p2);
+												Particle pN1 = new Particle(Element.values()[f]);
+												Particle pN2 = new Particle(Element.values()[f]);
+												addParticle(p.x, p.y, pN1);
+												addParticle(p.x + x, p.y + y, pN2);
 					}
 				}
 			}

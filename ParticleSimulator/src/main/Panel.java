@@ -186,8 +186,8 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		keySet.set(e.getKeyCode(),true);
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 			size++;
-			if (size > 6){
-				size = 6;
+			if (size > 8){
+				size = 8;
 			}
 		}
 		if(e.getKeyCode() == KeyEvent.VK_LEFT){
@@ -195,6 +195,7 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 			if(size < 1){
 				size = 1;
 			}
+
 		}
 	}
 	public void keyReleased(KeyEvent e) {

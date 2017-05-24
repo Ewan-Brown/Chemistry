@@ -25,9 +25,9 @@ public class Grid implements Runnable{
 					if( x > 150){
 						a = new Particle(Element.WATER);
 					}
-//					if (y < 100 && x > 200){
-//						a = new Particle(Element.SAND);
-//					}
+					//					if (y < 100 && x > 200){
+					//						a = new Particle(Element.SAND);
+					//					}
 				}
 				addParticle(x, y, a);
 			}
@@ -98,12 +98,12 @@ public class Grid implements Runnable{
 						 *	   and then just cycle through ints. ( Maybe speed this up using some logic?)
 						 */
 
-												removeParticle(p);
-												removeParticle(p2);
-												Particle pN1 = new Particle(Element.values()[f]);
-												Particle pN2 = new Particle(Element.values()[f]);
-												addParticle(p.x, p.y, pN1);
-												addParticle(p.x + x, p.y + y, pN2);
+						removeParticle(p);
+						removeParticle(p2);
+						Particle pN1 = new Particle(Element.values()[f]);
+						Particle pN2 = new Particle(Element.values()[f]);
+						addParticle(p.x, p.y, pN1);
+						addParticle(p.x + x, p.y + y, pN2);
 					}
 				}
 			}
@@ -129,10 +129,10 @@ public class Grid implements Runnable{
 			}
 			Element e = click.e;
 			addParticle(x, y, new Particle(e));
-			//			addParticle(x - 1, y, new Particle(e));
-			//			addParticle(x + 1, y, new Particle(e));
-			//			addParticle(x, y + 1, new Particle(e));
-			//			addParticle(x, y - 1, new Particle(e));
+			addParticle(x - 1, y, new Particle(e));
+			addParticle(x + 1, y, new Particle(e));
+			addParticle(x, y + 1, new Particle(e));
+			addParticle(x, y - 1, new Particle(e));
 			clicks.remove(i);
 		}
 	}

@@ -6,12 +6,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import main.Particle.Element;
+import main.Particle.Element.Type;
 
 public class Grid implements Runnable{
-	int width = 300;
-	int height = 350;
+	int width = 200;
+	int height = 200;
 	Color[][] colors = new Color[width][height];
-	Particle[][] particleStatic = new Particle[width][height];
+	Particle[][] particleArray = new Particle[width][height];
 	ArrayList<Clicky> clicks = new ArrayList<Clicky>();
 	ArrayList<Particle> liquids = new ArrayList<Particle>();
 	ArrayList<Particle> powders = new ArrayList<Particle>();
@@ -20,23 +21,22 @@ public class Grid implements Runnable{
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
 				Particle a = new Particle(Element.SPACE);
-				if(Math.sin(x) < 0.9){
-					if( y > 300){
-						a = new Particle(Element.WATER);
-					}
-					if (y < 100 && x > 200){
-						a = new Particle(Element.SAND);
-					}
-				}
+				//				if(Math.sin(x) < 0.9){
+				//					if( y > 300){
+				//						a = new Particle(Element.WATER);
+				//					}
+				//					if (y < 100 && x > 200){
+				//						a = new Particle(Element.SAND);
+				//					}
+				//				}
 				addParticle(x, y, a);
 			}
 		}
 	}
-
 	public Point getLocation(Particle p1){
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
-				Particle p2 = particleStatic[x][y];
+				Particle p2 = particleArray[x][y];
 				if(p2 == p1){
 					return new Point(x,y);
 				}
@@ -45,16 +45,21 @@ public class Grid implements Runnable{
 		return null;
 	}
 	public void addParticle(int x, int y, Particle p){
+		System.out.println(liquids.size());
 		if(x > width - 1 || x < 0 || y > height - 1 || y < 0){
 			return;
 		}
 		p.x = x;
 		p.y = y;
-		particleStatic[x][y] = p;
-		if(p.element.t == Element.Type.LIQUID){
+		Particle p1 = particleArray[x][y];
+		if(p1!=null){
+			removeParticle(p1);
+		}
+		particleArray[x][y] = p;
+		if(p.element.type == Element.Type.LIQUID){
 			liquids.add(p);
 		}
-		if(p.element.t == Element.Type.POWDER){
+		if(p.element.type == Element.Type.POWDER){
 			powders.add(p);
 		}
 	}
@@ -63,7 +68,56 @@ public class Grid implements Runnable{
 		updatePowder();
 		updateClicks();
 		updateColor();
+		updateReactions();
 
+	}
+	public void updateReactions(){
+		ArrayList<Particle> pa = new ArrayList<Particle>();
+		pa.addAll(liquids);
+		pa.addAll(powders);
+		for(int i = 0; i < pa.size();i++){
+			Particle p = pa.get(i);
+			int pI = p.element.ordinal();
+			for(int x = -1; x < 2;x++){
+				for(int y = -1; y < 2;y++){
+					int tX = x + p.x;
+					int tY = y + p.y;
+					if(tX >= width || tY >= height){
+						continue;
+					}
+					if(tX < 0 || tY < 0){
+						continue;
+					}
+					Particle p2 = particleArray[tX][tY];
+					int tI = p2.element.ordinal();
+					int f = Reactions.reactionTable[pI][tI];
+					if(f == -1){
+						continue;
+					}
+					else{
+						/*TODO Instead of comparing objects just give each particle a unique incrementing int ID(starting at 0)
+						 *	   and then just cycle through ints. ( Maybe speed this up using some logic?)
+						 */
+
+						//						removeParticle(p);
+						//						removeParticle(p2);
+						//						Particle pN1 = new Particle(Element.values()[f]);
+						//						Particle pN2 = new Particle(Element.values()[f]);
+						//						addParticle(p.x, p.y, pN1);
+						//						addParticle(p.x + x, p.y + y, pN2);
+					}
+				}
+			}
+		}
+	}
+	public void removeParticle(Particle p){
+		Element.Type e = p.element.type;
+		if(e == Type.LIQUID){
+			liquids.remove(p);
+		}
+		if(e == Type.POWDER){
+			powders.remove(p);
+		}
 	}
 	public void updateClicks(){
 		for(int i = 0; i < clicks.size();i++){
@@ -76,10 +130,10 @@ public class Grid implements Runnable{
 			}
 			Element e = click.e;
 			addParticle(x, y, new Particle(e));
-			addParticle(x - 1, y, new Particle(e));
-			addParticle(x + 1, y, new Particle(e));
-			addParticle(x, y + 1, new Particle(e));
-			addParticle(x, y - 1, new Particle(e));
+			//			addParticle(x - 1, y, new Particle(e));
+			//			addParticle(x + 1, y, new Particle(e));
+			//			addParticle(x, y + 1, new Particle(e));
+			//			addParticle(x, y - 1, new Particle(e));
 			clicks.remove(i);
 		}
 	}
@@ -87,7 +141,7 @@ public class Grid implements Runnable{
 		Color[][] colorsTemp = new Color[width][height];
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
-				colorsTemp[x][y] = particleStatic[x][y].element.c;
+				colorsTemp[x][y] = particleArray[x][y].element.c;
 			}
 		}
 		colors = colorsTemp;
@@ -96,6 +150,7 @@ public class Grid implements Runnable{
 		firstLoop:
 			for(int i = 0; i < powders.size();i++){
 				Particle p = powders.get(i);
+				p.isNew = false;
 				Movement down = new Movement(0,-1);
 
 				boolean d = canMove(p.x, p.y,down);
@@ -152,6 +207,7 @@ public class Grid implements Runnable{
 		liquidLoop:
 			for(int i = 0; i < liquids.size();i++){
 				Particle p = liquids.get(i);
+				p.isNew = false;
 				Movement down = new Movement(0,-1);
 				boolean d = canMove(p.x, p.y,down);
 				if(d){
@@ -195,10 +251,10 @@ public class Grid implements Runnable{
 		if(target == null){
 			return false;
 		}
-		if(moving.element.t == Element.Type.POWDER && target.element.t == Element.Type.LIQUID){
+		if(moving.element.type == Element.Type.POWDER && target.element.type == Element.Type.LIQUID){
 			return true;
 		}
-		if(target.element.t == Element.Type.SPACE){
+		if(target.element.type == Element.Type.SPACE){
 			return true;
 		}
 		else{
@@ -219,14 +275,14 @@ public class Grid implements Runnable{
 		setParticle(col,row,target);
 	}
 	public void setParticle(int x, int y, Particle p){
-		particleStatic[x][y] = p;
+		particleArray[x][y] = p;
 	}
 	public Particle getParticle(int x, int y){
 		if(x < 0 || x >= width || y < 0 || y >= height){
 			return null;
 		}
 		else{
-			return particleStatic[x][y];
+			return particleArray[x][y];
 		}
 	}
 	public void run() {
@@ -235,7 +291,6 @@ public class Grid implements Runnable{
 			try {
 				Thread.sleep(Panel.delay);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

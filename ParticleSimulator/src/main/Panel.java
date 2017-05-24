@@ -24,7 +24,7 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 	static Grid grid = new Grid();
 	private static ExecutorService executor = Executors.newCachedThreadPool();
 	public static int size = 2;
-	BitSet keySet = new BitSet(256);
+	public BitSet keySet = new BitSet(256);
 	static long time = 0;
 	boolean isClicked = false;
 	int yOffset = 0;
@@ -32,8 +32,8 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 	int selectedElement = 1;
 	int[] cooldowns = new int[10];
 	static int delay = 10;
-	//MULTITHREAD PAINTING AND CALCULATIONS?
 	public static void main(String[] args){
+		Reactions.init();
 		Thread t1 = new Thread(grid);
 		t1.start();
 		JFrame frame = new JFrame("PixelSimulator");
@@ -45,9 +45,7 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		frame.setSize(1000, 1000);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-	public Panel(){
-
-	}
+	public Panel(){}
 	public void doMouse(){
 		try{
 			int pX = (int)(MouseInfo.getPointerInfo().getLocation().getX() - this.getLocationOnScreen().getX());
@@ -92,43 +90,25 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		g.drawImage(b2, (w / 2) * size + xOffset, 0 + yOffset,this);
 		g.drawImage(b3, 0 + xOffset, (h / 2) * size + yOffset,this);
 		g.drawImage(b4, (w / 2) * size + xOffset, (h / 2) * size + yOffset,this);
-		/*}
-		else{
-			int x = 0;
-			int y = 0;
-					for(int c = 0; c < w;c++){
-						for(int r = 0; r < h;r++){
-							y += size;
-							Color p = a[c][r];
-							if(p == Color.BLACK){
-								continue;
-							}
-							g.setColor(p);
-							g.fillRect(x, y, size, size);
-						}
-						x += size;
-						y = 0;
-					}
-		}*/
 		time = System.nanoTime() - t0;
 		g.setColor(Color.RED);
-		g.drawString(delay+"", (w / 2) * size, (h / 2) * size);
+		g.drawString(delay+"", (getWidth() / 2), (getHeight() / 2));
 	}
 	public void updateKeys(){
 		for(int i = 0; i < cooldowns.length;i++){
 			cooldowns[i]--;
 		}
 		if(keySet.get(KeyEvent.VK_W)){
-			yOffset++;
+			yOffset += size;
 		}
 		if(keySet.get(KeyEvent.VK_A)){
-			xOffset++;
+			xOffset += size;
 		}		
 		if(keySet.get(KeyEvent.VK_S)){
-			yOffset--;
+			yOffset -= size;
 		}		
 		if(keySet.get(KeyEvent.VK_D)){
-			xOffset--;
+			xOffset -= size;
 		}
 		if(keySet.get(KeyEvent.VK_1)){
 			selectedElement = 0;
@@ -139,10 +119,16 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		if(keySet.get(KeyEvent.VK_3)){
 			selectedElement = 2;
 		}
+		if(keySet.get(KeyEvent.VK_4)){
+			selectedElement = 3;
+		}
 		if(cooldowns[0] < 0){
 			cooldowns[0] = 10;
 			if(keySet.get(KeyEvent.VK_COMMA)){
-				if(delay > 10){
+				if(delay > 150){
+					delay -= 100;
+				}
+				else if(delay > 10){
 					delay -= 5;
 				}
 				else{
@@ -157,26 +143,27 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		if(cooldowns[1] < 0){
 			cooldowns[1] = 10;
 			if(keySet.get(KeyEvent.VK_PERIOD)){
-				if(delay > 10){
+				if(delay > 150){
+					delay += 100;
+				}
+				else if(delay > 10){
 					delay += 5;
 				}
 				else{
 					delay++;
 				}
-				if(delay > 100){
-					delay = 100;
+				if(delay > 1000){
+					delay = 1000;
 				}
 			}
 		}
 	}
 	@Override
 	public void run() {
-
 		addKeyListener(this);
 		setFocusable(true);
 		addMouseListener(this);
 		while(true){
-
 			this.repaint();
 			updateKeys();
 			if(isClicked){
@@ -190,7 +177,6 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 			try {
 				Thread.sleep(15);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -200,8 +186,8 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		keySet.set(e.getKeyCode(),true);
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 			size++;
-			if (size > 5){
-				size = 5;
+			if (size > 6){
+				size = 6;
 			}
 		}
 		if(e.getKeyCode() == KeyEvent.VK_LEFT){

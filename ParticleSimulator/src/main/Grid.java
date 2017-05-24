@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import main.Particle.Element;
-import main.Particle.Element.Type;
 
 public class Grid implements Runnable{
 	int width = 300;
@@ -14,10 +13,13 @@ public class Grid implements Runnable{
 	Color[][] colors = new Color[width][height];
 	Particle[][] particleArray = new Particle[width][height];
 	ArrayList<Clicky> clicks = new ArrayList<Clicky>();
-	ArrayList<Particle> liquids = new ArrayList<Particle>();
-	ArrayList<Particle> powders = new ArrayList<Particle>();
+	ArrayList<ArrayList<Particle>> allParticles = new ArrayList<ArrayList<Particle>>();
+	//TODO Special heat checker, after physics and chemistry. Each element has its own melting/vaporizing points etc...
 	Random rand = new Random();
 	public Grid(){
+		for(int i = 0; i < Element.Type.values().length;i++){
+			allParticles.add(new ArrayList<Particle>());
+		}
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
 				Particle a = new Particle(Element.SPACE);
@@ -55,12 +57,8 @@ public class Grid implements Runnable{
 			removeParticle(p1);
 		}
 		particleArray[x][y] = p;
-		if(p.element.type == Element.Type.LIQUID){
-			liquids.add(p);
-		}
-		if(p.element.type == Element.Type.POWDER){
-			powders.add(p);
-		}
+		int t = p.element.type.ordinal();
+		allParticles.get(t).add(p);
 	}
 	public void update(){
 		updateLiquid();
@@ -72,8 +70,9 @@ public class Grid implements Runnable{
 	}
 	public void updateReactions(){
 		ArrayList<Particle> pa = new ArrayList<Particle>();
-		pa.addAll(liquids);
-		pa.addAll(powders);
+		for(int i = 0; i < allParticles.size();i++){
+			pa.addAll(allParticles.get(i));
+		}
 		for(int i = 0; i < pa.size();i++){
 			Particle p = pa.get(i);
 			int pI = p.element.ordinal();
@@ -95,9 +94,8 @@ public class Grid implements Runnable{
 					}
 					else{
 						/*TODO Instead of comparing objects just give each particle a unique incrementing int ID(starting at 0)
-						 *	   and then just cycle through ints. ( Maybe speed this up using some logic?)
+						 *	   and then just cycle through ints. ( Maybe speed this up even more using some logic?)
 						 */
-
 						removeParticle(p);
 						removeParticle(p2);
 						Particle pN1 = new Particle(Element.values()[f]);
@@ -110,13 +108,8 @@ public class Grid implements Runnable{
 		}
 	}
 	public void removeParticle(Particle p){
-		Element.Type e = p.element.type;
-		if(e == Type.LIQUID){
-			liquids.remove(p);
-		}
-		if(e == Type.POWDER){
-			powders.remove(p);
-		}
+		int f = p.element.type.ordinal();
+		allParticles.get(f).remove(p);
 	}
 	public void updateClicks(){
 		for(int i = 0; i < clicks.size();i++){
@@ -146,9 +139,10 @@ public class Grid implements Runnable{
 		colors = colorsTemp;
 	}
 	public void updatePowder(){
+		ArrayList<Particle> a = allParticles.get(Element.Type.POWDER.ordinal());
 		firstLoop:
-			for(int i = 0; i < powders.size();i++){
-				Particle p = powders.get(i);
+			for(int i = 0; i < a.size();i++){
+				Particle p = a.get(i);
 				p.isNew = false;
 				Movement down = new Movement(0,-1);
 
@@ -203,9 +197,10 @@ public class Grid implements Runnable{
 			}
 	}
 	public void updateLiquid(){
+		ArrayList<Particle> l = allParticles.get(Element.Type.LIQUID.ordinal());
 		liquidLoop:
-			for(int i = 0; i < liquids.size();i++){
-				Particle p = liquids.get(i);
+			for(int i = 0; i < l.size();i++){
+				Particle p = l.get(i);
 				p.isNew = false;
 				Movement down = new Movement(0,-1);
 				boolean d = canMove(p.x, p.y,down);

@@ -1,8 +1,10 @@
 package main;
 
 public class Reactions {
-	static int reactionNum = Particle.Element.values().length;
-	static int[][] reactionTable = new int[reactionNum][reactionNum];
+	//Instead of just ints, each element of this array is an object which gives both elements, but that would allow extra function (Chance of failed reaction)
+	//And things like change in temperature.
+	static final int reactionNum = Particle.Element.values().length;
+	static final int[][] reactionTable = new int[reactionNum][reactionNum];
 	public static void init(){
 		for(int i = 0; i < reactionNum;i++){
 			for(int j = 0; j < reactionNum;j++){

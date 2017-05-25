@@ -110,6 +110,7 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		if(keySet.get(KeyEvent.VK_D)){
 			xOffset -= size;
 		}
+		int s = selectedElement;
 		if(keySet.get(KeyEvent.VK_1)){
 			selectedElement = 0;
 		}
@@ -121,6 +122,12 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 		}
 		if(keySet.get(KeyEvent.VK_4)){
 			selectedElement = 3;
+		}
+		if(keySet.get(KeyEvent.VK_4)){
+			selectedElement = 4;
+		}
+		if(selectedElement > Element.values().length - 1){
+			selectedElement = s;
 		}
 		if(cooldowns[0] < 0){
 			cooldowns[0] = 10;

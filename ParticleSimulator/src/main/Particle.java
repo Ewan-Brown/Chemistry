@@ -7,6 +7,7 @@ public class Particle implements Cloneable{
 	public Element element;
 	public int x = 0;
 	public int y = 0;
+	//TODO GET RID OF THIS SOMEHOW IT IS NOT GOOD
 	boolean isNew = true;
 	public enum Element{
 		SPACE(Type.SPACE,Color.BLACK),
@@ -16,6 +17,9 @@ public class Particle implements Cloneable{
 		STONE(Type.SOLID,Color.GRAY);
 		Type type;
 		Color c;
+		double weight;
+		int meltingPoint;
+		int vaporizingPoint;
 		private Element(Type t, Color c){
 			this.type = t;
 			this.c = c;

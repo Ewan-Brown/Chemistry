@@ -27,9 +27,9 @@ public class Grid implements Runnable{
 					if( x > 150){
 						a = new Particle(Element.WATER);
 					}
-					//					if (y < 100 && x > 200){
-					//						a = new Particle(Element.SAND);
-					//					}
+										if (y < 100 && x > 200){
+											a = new Particle(Element.SAND);
+										}
 				}
 				addParticle(x, y, a);
 			}

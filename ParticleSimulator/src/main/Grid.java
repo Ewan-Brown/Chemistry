@@ -23,14 +23,14 @@ public class Grid implements Runnable{
 		for(int x = 0; x < width;x++){
 			for(int y = 0; y < height;y++){
 				Particle a = new Particle(Element.SPACE);
-				if(Math.random() < 0.9){
-					if( x > 150){
-						a = new Particle(Element.WATER);
-					}
-										if (y < 100 && x > 200){
-											a = new Particle(Element.SAND);
-										}
-				}
+//				if(Math.random() < 0.9){
+//					if( x > 120){
+//						a = new Particle(Element.WATER);
+//					}
+//					if (y < 100 && x > 200){
+//						a = new Particle(Element.SAND);
+//					}
+//				}
 				addParticle(x, y, a);
 			}
 		}
@@ -61,10 +61,13 @@ public class Grid implements Runnable{
 		allParticles.get(t).add(p);
 	}
 	public void update(){
+		updateColor();
+		updateClicks();
+		if(Panel.paused){
+			return;
+		}
 		updateLiquid();
 		updatePowder();
-		updateClicks();
-		updateColor();
 		updateReactions();
 
 	}
@@ -138,63 +141,75 @@ public class Grid implements Runnable{
 		}
 		colors = colorsTemp;
 	}
-	public void updatePowder(){
-		ArrayList<Particle> a = allParticles.get(Element.Type.POWDER.ordinal());
-		firstLoop:
-			for(int i = 0; i < a.size();i++){
-				Particle p = a.get(i);
-				p.isNew = false;
-				Movement down = new Movement(0,-1);
+	public void updateGas(){
+		ArrayList<Particle> g = allParticles.get(Element.Type.GAS.ordinal());
+		for(int i = 0 ;i < g.size();i++){
+			Particle p = g.get(i);
+			p.isNew = false;
+			for(int x = 0; x < 2; x++){
+				for(int y = 0; y < 2; y++){
 
-				boolean d = canMove(p.x, p.y,down);
-				if(d){
-					move(p.x,p.y,down);
-					if(rand.nextDouble() < 0.3){
-						continue;
-					}
-					if(rand.nextDouble() < 0.2){
-						Movement m = new Movement(-1,0);
-						if(rand.nextBoolean()){
-							m = new Movement(1,0);
-						}
-						if(canMove(p.x,p.y,m)){
-							move(p.x,p.y,m);
-						}
-					}
-				}
-				else{
-					if(rand.nextDouble() < 0.1){
-						continue firstLoop;
-					}
-					Movement left1 = new Movement(-1,0);
-					Movement right1 = new Movement(1,0);
-					Movement dleft1 = new Movement(-1,-1);
-					Movement dright1 = new Movement(1,-1);
-					Movement dleft2 = new Movement(-1,-2);
-					Movement dright2 = new Movement(1,-2);
-					Movement[][] moves = {{left1,dleft1,dleft2},{right1,dright1,dright2}};
-					int m = rand.nextInt(2);
-					boolean flag1 = true;
-					for(int j = 0; j < 3;j++){
-						if(!canMove(p.x,p.y,moves[m][j])){
-							flag1 = false;
-						}
-					}
-					if(flag1){
-						move(p.x,p.y,moves[m][2]);
-						continue firstLoop;
-					}
-					for(int j = 0; j < 3;j++){
-						if(!canMove(p.x,p.y,moves[1 - m][j])){
-							flag1 = false;
-						}
-					}
-					if(flag1){
-						move(p.x,p.y,moves[m][2]);
-						continue firstLoop;
-					}
 				}
 			}
+		}
+	}
+	public void updatePowder(){
+//		ArrayList<Particle> a = allParticles.get(Element.Type.POWDER.ordinal());
+//		firstLoop:
+//			for(int i = 0; i < a.size();i++){
+//				Particle p = a.get(i);
+//				p.isNew = false;
+//				Movement down = new Movement(0,-1);
+//
+//				boolean d = canMove(p.x, p.y,down);
+//				if(d){
+//					move(p.x,p.y,down);
+//					if(rand.nextDouble() < 0.3){
+//						continue;
+//					}
+//					if(rand.nextDouble() < 0.2){
+//						Movement m = new Movement(-1,0);
+//						if(rand.nextBoolean()){
+//							m = new Movement(1,0);
+//						}
+//						if(canMove(p.x,p.y,m)){
+//							move(p.x,p.y,m);
+//						}
+//					}
+//				}
+//				else{
+//					if(rand.nextDouble() < 0.1){
+//						continue firstLoop;
+//					}
+//					Movement left1 = new Movement(-1,0);
+//					Movement right1 = new Movement(1,0);
+//					Movement dleft1 = new Movement(-1,-1);
+//					Movement dright1 = new Movement(1,-1);
+//					Movement dleft2 = new Movement(-1,-2);
+//					Movement dright2 = new Movement(1,-2);
+//					Movement[][] moves = {{left1,dleft1,dleft2},{right1,dright1,dright2}};
+//					int m = rand.nextInt(2);
+//					boolean flag1 = true;
+//					for(int j = 0; j < 3;j++){
+//						if(!canMove(p.x,p.y,moves[m][j])){
+//							flag1 = false;
+//						}
+//					}
+//					if(flag1){
+//						move(p.x,p.y,moves[m][2]);
+//						continue firstLoop;
+//					}
+//					for(int j = 0; j < 3;j++){
+//						if(!canMove(p.x,p.y,moves[1 - m][j])){
+//							flag1 = false;
+//						}
+//					}
+//					if(flag1){
+//						move(p.x,p.y,moves[m][2]);
+//						continue firstLoop;
+//					}
+//				}
+//			}
 	}
 	public void updateLiquid(){
 		ArrayList<Particle> l = allParticles.get(Element.Type.LIQUID.ordinal());
@@ -202,53 +217,67 @@ public class Grid implements Runnable{
 			for(int i = 0; i < l.size();i++){
 				Particle p = l.get(i);
 				p.isNew = false;
-				Movement down = new Movement(0,-1);
-				boolean d = canMove(p.x, p.y,down);
-				if(d){
-					move(p.x,p.y,down);
-					if(rand.nextDouble() < 0.3){
-						continue;
+				int w = p.element.weight;
+				int max = 0;
+				//Check if particle can fall down
+				for(int j = 1; j < w + 1; j++){
+					if(canMove(p.x,p.y,0,-j)){
+						max = -j;
+					}
+					else{
+						break;
 					}
 				}
-				Movement left1 = new Movement(-1,0);
-				Movement left2 = new Movement(-2,0);
-				Movement right1 = new Movement(1,0);
-				Movement right2 = new Movement(2,0);
-				Movement[][] moves = {{left1,left2},{right1,right2}};
-				//1 is left 2 is right
-
-				int m = rand.nextInt(2);
-				int max = 2;
-				if (d) {
-					max = 1;
+				//If particle can fall down, then fall and finish
+				if(max != 0){
+					move(p.x, p.y, 0, max);
+					continue;
 				}
-				for(int j = 0;j < max;j++){
-					if(canMove(p.x,p.y,moves[m][j])){
-						move(p.x,p.y,moves[m][j]);
-						continue liquidLoop;
-
+				//Otherwise...
+//				int d = (rand.nextBoolean()) ? 1 : -1; //Direction, >1 = right --- <1 = left
+				
+				//If d direction doesn't work at all redo this with d negafied ?
+//				int finalX = 0;
+//				int finalY = 0;
+//				for(int j = 1; j < w + 1;j++){
+//					if(canMove(p.x, p.y, j * d, 0)){
+//						finalX = j * d;
+//						int xMax = 0;
+//						for(int k = 1; k < w + 1 - j;k++){
+//							if(canMove(p.x, p.y, j * d, 0)){
+//								
+//							}
+//						}
 					}
-				}
-				for(int j = 0;j < max;j++){
-					if(canMove(p.x,p.y,moves[1 - m][j])){
-						move(p.x,p.y,moves[1 - m][j]);
-						continue liquidLoop;
-					}
-				}
-			}
+//					else break;
+//					else if (j == 1){
+						//Flip d and restart
+						//Or end???
+//					}
+//				}
+//			}
 	}
-	public boolean canMove(int col, int row, Movement m){
+	public boolean canMove(int col, int row, int x, int y){
 		Particle moving = getParticle(col,row);
-		int targetCol = col + m.x;
-		int targetRow = row - m.y;
+		int targetCol = col + x;
+		int targetRow = row - y;
 		Particle target = getParticle(targetCol,targetRow);
-		if(target == null){
+		
+		if(target == null) return false;
+		
+		Element.Type mT = moving.element.type;
+		Element.Type tT = target.element.type;
+		
+		if(mT == Element.Type.SOLID || target.element.type == Element.Type.SOLID){
 			return false;
 		}
-		if(moving.element.type == Element.Type.POWDER && target.element.type == Element.Type.LIQUID){
+		if(tT == Element.Type.SPACE){
 			return true;
 		}
-		if(target.element.type == Element.Type.SPACE){
+		if(mT == Element.Type.POWDER && tT == Element.Type.LIQUID){
+			return true;
+		}
+		if(mT == tT && moving.element.weight < target.element.weight){
 			return true;
 		}
 		else{
@@ -256,10 +285,10 @@ public class Grid implements Runnable{
 		}
 
 	}
-	public void move(int col,int row,Movement m){
+	public void move(int col,int row,int x, int y){
 		Particle moving = getParticle(col,row);
-		int targetCol = col + m.x;
-		int targetRow = row - m.y;
+		int targetCol = col + x;
+		int targetRow = row - y;
 		Particle target = getParticle(targetCol,targetRow);
 		setParticle(targetCol,targetRow,moving);
 		moving.x = targetCol;
@@ -281,8 +310,8 @@ public class Grid implements Runnable{
 	}
 	public void run() {
 		while(true){
-			update();
 			try {
+				update();
 				Thread.sleep(Panel.delay);
 			} catch (InterruptedException e) {
 				e.printStackTrace();

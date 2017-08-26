@@ -10,19 +10,22 @@ public class Particle implements Cloneable{
 	//TODO GET RID OF THIS SOMEHOW IT IS NOT GOOD
 	boolean isNew = true;
 	public enum Element{
-		SPACE(Type.SPACE,Color.BLACK),
-		WATER(Type.LIQUID,Color.BLUE),
-		SAND(Type.POWDER,Color.YELLOW),
-		CLAY(Type.POWDER,Color.LIGHT_GRAY),
-		STONE(Type.SOLID,Color.GRAY);
+		
+		SPACE(Type.SPACE,Color.BLACK,0),
+		WATER(Type.LIQUID,Color.BLUE,1),
+		SAND(Type.LIQUID,Color.YELLOW,2),
+		CLAY(Type.LIQUID,Color.LIGHT_GRAY,3),
+		STONE(Type.SOLID,Color.GRAY,1);
 		Type type;
+		//TODO Should weight be a double?
+		int weight;
 		Color c;
-		double weight;
 		int meltingPoint;
 		int vaporizingPoint;
-		private Element(Type t, Color c){
+		private Element(Type t, Color c, int w){
 			this.type = t;
 			this.c = c;
+			this.weight = w;
 		}
 		public enum Type{
 			SOLID, GAS, LIQUID, SPACE, POWDER;

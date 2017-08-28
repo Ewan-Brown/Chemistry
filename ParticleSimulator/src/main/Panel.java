@@ -33,7 +33,7 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 	int selectedElement = 1;
 	int[] cooldowns = new int[10];
 	ArrayList<Long> times = new ArrayList<Long>();
-	static int delay = 10;
+	static int delay = 50;
 	static boolean paused = true;
 	static JFrame frame;
 	static Panel panel;
@@ -207,6 +207,9 @@ public class Panel extends JPanel implements Runnable, KeyListener, MouseListene
 	public void keyTyped(KeyEvent e) {}
 	public void keyPressed(KeyEvent e) {
 		keySet.set(e.getKeyCode(),true);
+		if(keySet.get(KeyEvent.VK_F)){
+			grid.update();
+		}
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 			size++;
 			if (size > 8){
